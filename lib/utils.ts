@@ -13,7 +13,7 @@ export function formatPrice(price: number, currency: string = "INR"): string {
 }
 
 export function formatDate(date: Date | string): string {
-  return new Intl.DateFormat("en-IN", {
+  return new Intl.DateTimeFormat("en-IN", {
     month: "short",
     day: "numeric",
     year: "numeric",

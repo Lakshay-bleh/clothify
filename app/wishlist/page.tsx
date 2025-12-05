@@ -7,16 +7,21 @@ import { ProductCard } from '@/components/product-card'
 import { Button } from '@/components/ui/button'
 import { Heart } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 export default function WishlistPage() {
   const { user } = useAuth()
   const router = useRouter()
   const { items, itemCount } = useWishlistStore()
 
-  if (!user) {
-    router.push('/auth/signin?callbackUrl=/wishlist')
-    return null
-  }
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/signin?callbackUrl=/wishlist");
+    }
+  }, [user, router]);
+
+  // Avoid rendering until we know user exists
+  if (!user) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">

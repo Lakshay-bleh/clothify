@@ -6,15 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { User, LogOut, Package, Heart } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 export default function AccountPage() {
   const { user, profile, signOut } = useAuth()
   const router = useRouter()
 
-  if (!user) {
-    router.push('/auth/signin')
-    return null
-  }
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/signin");
+    }
+  }, [user, router]);
+
+  // Avoid rendering until redirect completes
+  if (!user) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">

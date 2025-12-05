@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -14,51 +14,65 @@ import { motion } from 'framer-motion'
 import { CreditCard, Smartphone, Wallet } from 'lucide-react'
 
 export default function CheckoutPage() {
-  const router = useRouter()
-  const { user } = useAuth()
-  const { items, subtotal, total, clearCart } = useCartStore()
-  const [step, setStep] = useState(1)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const router = useRouter();
+  const { user } = useAuth();
+  const { items, subtotal, total, clearCart } = useCartStore();
+  const [step, setStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [shippingInfo, setShippingInfo] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    country: 'India',
-  })
+    fullName: "",
+    email: "",
+    phone: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "India",
+  });
 
-  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'UPI' | 'COD'>('COD')
+  const [paymentMethod, setPaymentMethod] = useState<"CARD" | "UPI" | "COD">(
+    "COD"
+  );
 
-  if (!user) {
-    router.push('/auth/signin?callbackUrl=/checkout')
-    return null
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/signin?callbackUrl=/checkout");
+    } else if (items.length === 0) {
+      router.push("/shop");
+    }
+  }, [user, items]);
+
+  // Redirect logic must run in the browser only
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/signin?callbackUrl=/checkout");
+    } else if (items.length === 0) {
+      router.push("/shop");
+    }
+  }, [user, items]);
+
+  // Instead of returning null immediately, wait for redirect
+  if (!user || items.length === 0) {
+    return null;
   }
-
-  if (items.length === 0) {
-    router.push('/shop')
-    return null
-  }
-
+  
   const handleShippingSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setStep(2)
-  }
+    e.preventDefault();
+    setStep(2);
+  };
 
   const handlePayment = async () => {
-    setIsProcessing(true)
+    setIsProcessing(true);
 
     try {
       // Create order in Firestore
       const orderData = {
         userId: user.uid,
         orderNumber: `ORD-${Date.now()}`,
-        status: 'PENDING',
-        items: items.map(item => ({
+        status: "PENDING",
+        items: items.map((item) => ({
           productId: item.productId,
           variantId: item.variantId,
           name: item.name,
@@ -73,26 +87,26 @@ export default function CheckoutPage() {
         total: total(),
         shippingAddress: shippingInfo,
         paymentMethod,
-        paymentStatus: paymentMethod === 'COD' ? 'PENDING' : 'COMPLETED',
+        paymentStatus: paymentMethod === "COD" ? "PENDING" : "COMPLETED",
         createdAt: new Date(),
-      }
+      };
 
-      const orderId = await addDocument('orders', orderData)
-      
+      const orderId = await addDocument("orders", orderData);
+
       // Clear cart
-      clearCart()
-      
-      // Redirect to success page
-      router.push(`/orders/${orderId}?success=true`)
-    } catch (error) {
-      console.error('Order creation error:', error)
-      alert('Failed to create order. Please try again.')
-    } finally {
-      setIsProcessing(false)
-    }
-  }
+      clearCart();
 
-  const shipping = subtotal() > 5000 ? 0 : 200
+      // Redirect to success page
+      router.push(`/orders/${orderId}?success=true`);
+    } catch (error) {
+      console.error("Order creation error:", error);
+      alert("Failed to create order. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const shipping = subtotal() > 5000 ? 0 : 200;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -108,8 +122,8 @@ export default function CheckoutPage() {
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-full ${
                     step >= s
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {s}
@@ -117,7 +131,7 @@ export default function CheckoutPage() {
                 {s < 2 && (
                   <div
                     className={`h-1 w-16 ${
-                      step > s ? 'bg-primary' : 'bg-muted'
+                      step > s ? "bg-primary" : "bg-muted"
                     }`}
                   />
                 )}
@@ -145,7 +159,10 @@ export default function CheckoutPage() {
                           required
                           value={shippingInfo.fullName}
                           onChange={(e) =>
-                            setShippingInfo({ ...shippingInfo, fullName: e.target.value })
+                            setShippingInfo({
+                              ...shippingInfo,
+                              fullName: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -157,7 +174,10 @@ export default function CheckoutPage() {
                           required
                           value={shippingInfo.email}
                           onChange={(e) =>
-                            setShippingInfo({ ...shippingInfo, email: e.target.value })
+                            setShippingInfo({
+                              ...shippingInfo,
+                              email: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -171,7 +191,10 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.phone}
                         onChange={(e) =>
-                          setShippingInfo({ ...shippingInfo, phone: e.target.value })
+                          setShippingInfo({
+                            ...shippingInfo,
+                            phone: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -183,7 +206,10 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.addressLine1}
                         onChange={(e) =>
-                          setShippingInfo({ ...shippingInfo, addressLine1: e.target.value })
+                          setShippingInfo({
+                            ...shippingInfo,
+                            addressLine1: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -196,7 +222,10 @@ export default function CheckoutPage() {
                           required
                           value={shippingInfo.city}
                           onChange={(e) =>
-                            setShippingInfo({ ...shippingInfo, city: e.target.value })
+                            setShippingInfo({
+                              ...shippingInfo,
+                              city: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -207,7 +236,10 @@ export default function CheckoutPage() {
                           required
                           value={shippingInfo.state}
                           onChange={(e) =>
-                            setShippingInfo({ ...shippingInfo, state: e.target.value })
+                            setShippingInfo({
+                              ...shippingInfo,
+                              state: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -218,7 +250,10 @@ export default function CheckoutPage() {
                           required
                           value={shippingInfo.postalCode}
                           onChange={(e) =>
-                            setShippingInfo({ ...shippingInfo, postalCode: e.target.value })
+                            setShippingInfo({
+                              ...shippingInfo,
+                              postalCode: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -246,11 +281,11 @@ export default function CheckoutPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
                     <button
-                      onClick={() => setPaymentMethod('CARD')}
+                      onClick={() => setPaymentMethod("CARD")}
                       className={`flex w-full items-center gap-4 rounded-lg border-2 p-4 transition-all ${
-                        paymentMethod === 'CARD'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border'
+                        paymentMethod === "CARD"
+                          ? "border-primary bg-primary/5"
+                          : "border-border"
                       }`}
                     >
                       <CreditCard className="h-6 w-6" />
@@ -263,11 +298,11 @@ export default function CheckoutPage() {
                     </button>
 
                     <button
-                      onClick={() => setPaymentMethod('UPI')}
+                      onClick={() => setPaymentMethod("UPI")}
                       className={`flex w-full items-center gap-4 rounded-lg border-2 p-4 transition-all ${
-                        paymentMethod === 'UPI'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border'
+                        paymentMethod === "UPI"
+                          ? "border-primary bg-primary/5"
+                          : "border-border"
                       }`}
                     >
                       <Smartphone className="h-6 w-6" />
@@ -280,11 +315,11 @@ export default function CheckoutPage() {
                     </button>
 
                     <button
-                      onClick={() => setPaymentMethod('COD')}
+                      onClick={() => setPaymentMethod("COD")}
                       className={`flex w-full items-center gap-4 rounded-lg border-2 p-4 transition-all ${
-                        paymentMethod === 'COD'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border'
+                        paymentMethod === "COD"
+                          ? "border-primary bg-primary/5"
+                          : "border-border"
                       }`}
                     >
                       <Wallet className="h-6 w-6" />
@@ -310,7 +345,7 @@ export default function CheckoutPage() {
                       disabled={isProcessing}
                       className="flex-1"
                     >
-                      {isProcessing ? 'Processing...' : 'Place Order'}
+                      {isProcessing ? "Processing..." : "Place Order"}
                     </Button>
                   </div>
                 </CardContent>
@@ -342,7 +377,9 @@ export default function CheckoutPage() {
                       <p className="text-muted-foreground">
                         {item.size} / {item.color}
                       </p>
-                      <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                      <p className="text-muted-foreground">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
                     <p className="font-semibold">
                       {formatPrice(item.price * item.quantity)}
@@ -377,5 +414,5 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
