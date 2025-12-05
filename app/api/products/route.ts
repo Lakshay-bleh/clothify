@@ -42,10 +42,13 @@ export async function GET(request: NextRequest) {
 
     // Fetch products
     const snapshot = await query.get()
-    const products = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
+    const products = snapshot.docs.map(
+      (doc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => ({
+        id: doc.id,
+        ...doc.data(),
+      })
+    )
+    
 
     const response = {
       products,
