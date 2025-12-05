@@ -18,6 +18,7 @@ if (!getApps().length) {
     })
   } catch (error) {
     console.error('Firebase admin initialization error:', error)
+    throw error // Ensure app is always assigned or error is thrown
   }
 } else {
   app = getApps()[0]
