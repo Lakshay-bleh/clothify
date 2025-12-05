@@ -28,7 +28,7 @@ export function FilterSidebar() {
     activeFilterCount,
   } = useFilterStore()
 
-  const [localPriceRange, setLocalPriceRange] = useState(priceRange)
+  const [localPriceRange, setLocalPriceRange] = useState<number[]>(priceRange)
 
   const availableCategories = [
     { id: 'tshirts', label: 'T-Shirts' },
